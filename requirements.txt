@@ -143,3 +143,4 @@ wrapt==2.1.2
 xlsxwriter==3.2.9
 xxhash==3.6.0
 yarl==1.23.0a
+python<3.14
