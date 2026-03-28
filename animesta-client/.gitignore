@@ -1,0 +1,24 @@
+# Node/React
+node_modules/
+build/
+dist/
+.env
+
+# Python Environments
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+env/
+synapse_env/
+
+# Large Machine Learning Models
+*.pkl
+*.h5
+*.pt
+*.pth
+*.onnx
+
+# OS generated files
+.DS_Store
+Thumbs.db

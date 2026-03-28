@@ -1,0 +1,11 @@
+**/node_modules/
+**/synapse_env/
+**/venv/
+**/env/
+**/__pycache__
+*.dll
+*.h5
+*.pt
+*.bin
+*.safetensors
+.env
