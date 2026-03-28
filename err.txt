@@ -1,2 +1,0 @@
-[f3fb665261cdd78a3c52e69d9c9571c3208f967f811a0a0474d05d44a7c2fca7] Size must be less than or equal to 2147483648: [422] Size must be less than or equal to 2147483648
-error: failed to push some refs to 'https://github.com/Korisipati-Charan/Synapse.git'
