@@ -29,28 +29,28 @@ const BiometricFaceDrawing = ({ expression, theme }) => {
       <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '2px', background: theme, boxShadow: `0 0 10px ${theme}`, animation: 'scanline 2s linear infinite' }}></div>
 
       <svg width="100" height="120" viewBox="0 0 100 120" style={{ position: 'relative', zIndex: 2, filter: `drop-shadow(0 0 5px ${theme})` }}>
-        <path d="M 20 20 L 80 20 L 85 50 L 70 100 L 50 110 L 30 100 L 15 50 Z" fill="none" stroke={theme} strokeWidth="1.5" strokeDasharray="4 2" />
-        <line x1="25" y1={35 + getEyeOffset()} x2="40" y2={35 + getEyeOffset()} stroke={theme} strokeWidth="2" />
-        <line x1="60" y1={35 + getEyeOffset()} x2="75" y2={35 + getEyeOffset()} stroke={theme} strokeWidth="2" />
-        <circle cx="32" cy="45" r="3" fill={theme} />
-        <circle cx="68" cy="45" r="3" fill={theme} />
-        <path d="M 50 35 L 50 65 L 45 70" fill="none" stroke={theme} strokeWidth="1" opacity="0.6" />
-        <path d={getMouthPath()} fill={expression === "SURPRISED / TALKING" ? `${theme}44` : "none"} stroke={theme} strokeWidth="2" />
-        <circle cx="50" cy="110" r="2" fill="#fff" style={{ animation: 'pulseNode 1.5s infinite' }} />
-        <circle cx="15" cy="50" r="2" fill="#fff" style={{ animation: 'pulseNode 1.5s infinite 0.5s' }} />
-        <circle cx="85" cy="50" r="2" fill="#fff" style={{ animation: 'pulseNode 1.5s infinite 0.5s' }} />
+        <path d="M 20 20 L 80 20 L 85 50 L 70 100 L 50 110 L 30 100 L 15 50 Z" fill="none" stroke={theme} strokeWidth="2.5" strokeDasharray="4 2" />
+        <line x1="25" y1={35 + getEyeOffset()} x2="40" y2={35 + getEyeOffset()} stroke={theme} strokeWidth="3" />
+        <line x1="60" y1={35 + getEyeOffset()} x2="75" y2={35 + getEyeOffset()} stroke={theme} strokeWidth="3" />
+        <circle cx="32" cy="45" r="4" fill={theme} />
+        <circle cx="68" cy="45" r="4" fill={theme} />
+        <path d="M 50 35 L 50 65 L 45 70" fill="none" stroke={theme} strokeWidth="2" opacity="0.6" />
+        <path d={getMouthPath()} fill={expression === "SURPRISED / TALKING" ? `${theme}44` : "none"} stroke={theme} strokeWidth="3" />
+        <circle cx="50" cy="110" r="3" fill="#fff" style={{ animation: 'pulseNode 1.5s infinite' }} />
+        <circle cx="15" cy="50" r="3" fill="#fff" style={{ animation: 'pulseNode 1.5s infinite 0.5s' }} />
+        <circle cx="85" cy="50" r="3" fill="#fff" style={{ animation: 'pulseNode 1.5s infinite 0.5s' }} />
       </svg>
     </div>
   );
 };
 
 // ============================================================================
-// 2. TERMINAL INPUT
+// 2. TERMINAL INPUT (HYBRID RESPONSIVE)
 // ============================================================================
 const TerminalInput = ({ command, setCommand, onExecute, theme, hciActive, internetActive }) => {
   const getPrompt = () => {
     if (hciActive && internetActive) return "C:\\OMNI>";
-    if (hciActive && !internetActive) return "C:\\REQUIEM>";
+    if (hciActive && !internetActive) return "C:\\REQ>";
     return "C:\\ZERO>";
   };
 
@@ -59,20 +59,22 @@ const TerminalInput = ({ command, setCommand, onExecute, theme, hciActive, inter
   if (command.length > 0) statusText = "TYPING";
 
   return (
-    <div style={{ display: 'flex', gap: '15px', background: '#030303', padding: '15px', border: `1px solid ${theme}44`, borderLeft: `6px solid ${theme}`, position: 'relative', overflow: 'hidden' }}>
+    <div className="terminal-input-container" style={{ background: '#030303', border: `1px solid ${theme}44`, borderLeft: `6px solid ${theme}`, position: 'relative', overflow: 'hidden' }}>
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 2px, ${theme} 2px, ${theme} 4px)`, opacity: 0.05, pointerEvents: 'none' }}></div>
 
-      <div style={{ display: 'flex', alignItems: 'center', flex: 1, background: 'transparent', zIndex: 1 }}>
-        <span style={{ color: theme, marginRight: '12px', fontWeight: 'bold', fontFamily: 'monospace', fontSize: '1.2rem' }}>{getPrompt()}</span>
-        <div style={{ position: 'relative', flex: 1, display: 'flex', alignItems: 'center' }}>
-            {command.length === 0 && <span style={{ position: 'absolute', color: theme, opacity: 0.3, fontFamily: 'monospace', fontSize: '1.2rem', pointerEvents: 'none' }}>_ awaiting command...</span>}
-            <input type="text" value={command} onChange={e => setCommand(e.target.value)} onKeyDown={e => e.key === 'Enter' && onExecute()} style={{ flex: 1, background: 'transparent', border: 'none', color: theme, fontSize: '1.2rem', outline: 'none', fontFamily: 'monospace', caretColor: 'transparent', zIndex: 2 }} spellCheck="false" autoComplete="off" autoFocus />
+      <div style={{ display: 'flex', alignItems: 'center', flex: 1, background: 'transparent', zIndex: 1, minWidth: 0 }}>
+        <span className="prompt-text" style={{ color: theme, fontWeight: 'bold', fontFamily: 'monospace' }}>{getPrompt()}</span>
+        <div style={{ position: 'relative', flex: 1, display: 'flex', alignItems: 'center', minWidth: 0 }}>
+            {command.length === 0 && <span className="prompt-placeholder" style={{ position: 'absolute', color: theme, opacity: 0.3, fontFamily: 'monospace', pointerEvents: 'none', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>_ await...</span>}
+            <input type="text" value={command} onChange={e => setCommand(e.target.value)} onKeyDown={e => e.key === 'Enter' && onExecute()} className="input-box" style={{ width: '100%', background: 'transparent', border: 'none', color: theme, outline: 'none', fontFamily: 'monospace', caretColor: 'transparent', zIndex: 2 }} spellCheck="false" autoComplete="off" autoFocus />
             <div style={{ width: '12px', height: '1.2rem', background: theme, animation: 'blink 1s step-end infinite', flexShrink: 0, marginLeft: '2px' }}></div>
         </div>
-        <span style={{ color: theme, opacity: 0.5, fontSize: '0.8rem', fontFamily: 'monospace', marginLeft: '15px', letterSpacing: '1px' }}>[{statusText}]</span>
       </div>
       
-      <button onClick={onExecute} style={{ flexShrink: 0, background: 'transparent', color: theme, border: `1px solid ${theme}`, padding: '0 25px', fontWeight: 'bold', cursor: 'pointer', fontFamily: 'monospace', fontSize: '1rem', letterSpacing: '2px', transition: 'all 0.1s', zIndex: 1 }} onMouseOver={e => { e.currentTarget.style.background = theme; e.currentTarget.style.color = '#000'; }} onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = theme; }}>[ EXEC ]</button>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+        <span className="terminal-status" style={{ color: theme, opacity: 0.5, fontFamily: 'monospace', letterSpacing: '1px' }}>[{statusText}]</span>
+        <button className="exec-btn" onClick={onExecute} style={{ background: 'transparent', color: theme, border: `2px solid ${theme}`, fontWeight: 'bold', cursor: 'pointer', fontFamily: 'monospace', letterSpacing: '1px', transition: 'all 0.1s', zIndex: 1 }} onMouseOver={e => { e.currentTarget.style.background = theme; e.currentTarget.style.color = '#000'; }} onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = theme; }}>EXEC</button>
+      </div>
       <style>{`@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }`}</style>
     </div>
   );
@@ -92,12 +94,19 @@ const App = () => {
   const socketRef = useRef(null);
   const logsEndRef = useRef(null);
   
+  // Audio & Hardware Refs
   const audioCtxRef = useRef(null);
   const analyserRef = useRef(null);
   const audioDataRef = useRef(null);
   const recognitionRef = useRef(null); 
+  const micStreamRef = useRef(null); 
+  
+  // VAD Locks & Timers
   const haltTriggeredRef = useRef(false);
-  const isSpeakingRef = useRef(false); // <--- HALF-DUPLEX FLAG
+  const isSpeakingRef = useRef(false); 
+  const isProcessingRef = useRef(false); 
+  const silenceTimerRef = useRef(null);
+  const transcriptBufferRef = useRef("");
   
   const lastSent = useRef(0);
   const lastGestureTime = useRef(0);
@@ -123,7 +132,6 @@ const App = () => {
     internetActiveRef.current = internetActive;
   }, [hciActive, internetActive]);
 
-  // --- IGNITE SPEECH RECOGNITION WHEN ENTERING REQUIEM ---
   useEffect(() => {
     if (recognitionRef.current) {
       if (hciActive) {
@@ -169,14 +177,19 @@ const App = () => {
         currentBio.current.tone = tone; 
         
         if (hciActiveRef.current && fftCanvasRef.current) {
-            const ctx = fftCanvasRef.current.getContext('2d');
-            const w = fftCanvasRef.current.width;
-            const h = fftCanvasRef.current.height;
+            const canvas = fftCanvasRef.current;
+            const ctx = canvas.getContext('2d');
+            
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = 120;
+            
+            const w = canvas.width;
+            const h = canvas.height;
             
             ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
             ctx.fillRect(0, 0, w, h);
             
-            ctx.lineWidth = 2;
+            ctx.lineWidth = 4;
             ctx.strokeStyle = theme;
             ctx.beginPath();
             
@@ -210,8 +223,18 @@ const App = () => {
     setBootError('');
 
     try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+            video: { facingMode: "user" }, 
+            audio: { 
+                echoCancellation: true,   
+                noiseSuppression: true,   
+                autoGainControl: true,    
+                sampleRate: 44100 
+            } 
+        });
         
+        micStreamRef.current = stream;
+
         const smartLocateFile = (file) => {
             if (file.startsWith('face_mesh')) return `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`;
             return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`; 
@@ -291,12 +314,12 @@ const App = () => {
                 const dx = (lm[9].x - lm[0].x) * hudCanvasRef.current.width;
                 const dy = (lm[9].y - lm[0].y) * hudCanvasRef.current.height;
                 const handPixelSize = Math.sqrt(dx * dx + dy * dy);
-                const lineWeight = Math.max(2, handPixelSize * 0.05); 
+                const lineWeight = Math.max(4, handPixelSize * 0.08); 
 
                 ctx.shadowColor = theme; ctx.shadowBlur = 15; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
                 drawConnectors(ctx, lm, HAND_CONNECTIONS, { color: theme, lineWidth: lineWeight });
                 ctx.shadowBlur = 0; 
-                drawLandmarks(ctx, lm, { color: '#ffffff', fillColor: '#000000', lineWidth: Math.max(1, lineWeight * 0.4), radius: lineWeight * 0.7 });
+                drawLandmarks(ctx, lm, { color: '#ffffff', fillColor: '#000000', lineWidth: Math.max(2, lineWeight * 0.4), radius: lineWeight * 0.8 });
                 
                 setUi(p => (p.gesture === "SEARCHING..." ? { ...p, gesture: "SCANNING..." } : p));
 
@@ -323,20 +346,24 @@ const App = () => {
     }
   };
 
-  // --- V2V CONTINUOUS RECOGNITION (UPGRADED HALF-DUPLEX) ---
+  // --- V2V PING-PONG RECOGNITION (VERBAL GATEKEEPER INCLUDED) ---
   const setupSpeechRecognition = () => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (SpeechRecognition) {
         recognitionRef.current = new SpeechRecognition();
+        
         recognitionRef.current.continuous = true; 
         recognitionRef.current.interimResults = true; 
         recognitionRef.current.lang = 'en-US';
 
         recognitionRef.current.onstart = () => {
-            console.log("[MIC] Engine successfully engaged and listening.");
+            console.log("[MIC] Engaged and listening...");
+            transcriptBufferRef.current = ""; 
         };
 
         recognitionRef.current.onresult = (event) => {
+            if (isSpeakingRef.current) return;
+
             let interimTranscript = '';
             let finalTranscript = '';
 
@@ -345,11 +372,12 @@ const App = () => {
                 else interimTranscript += event.results[i][0].transcript;
             }
 
-            console.log(`[MIC LIVE] Interim: "${interimTranscript}" | Final: "${finalTranscript}"`);
-
-            const rawTranscript = (interimTranscript + finalTranscript).toLowerCase();
+            const liveText = (finalTranscript + interimTranscript).toLowerCase().trim();
             
-            if (rawTranscript.includes('halt') && hciActiveRef.current) {
+            if (hciActiveRef.current) setCommand(liveText);
+            
+            if (liveText.includes('halt') && hciActiveRef.current) {
+                clearTimeout(silenceTimerRef.current);
                 if (!haltTriggeredRef.current) {
                     window.speechSynthesis.cancel(); 
                     if (socketRef.current?.readyState === WebSocket.OPEN) {
@@ -358,36 +386,58 @@ const App = () => {
                     setLogs(p => [...p, `[SYS] VOCAL OVERRIDE 'HALT' DETECTED. AI SILENCED.`]);
                     haltTriggeredRef.current = true; 
                 }
-                interimTranscript = interimTranscript.replace(/halt/gi, '').trim();
-                finalTranscript = finalTranscript.replace(/halt/gi, '').trim();
+                setCommand("");
+                return;
             }
 
-            if (interimTranscript && hciActiveRef.current) setCommand(interimTranscript);
-            else if (haltTriggeredRef.current && !finalTranscript) setCommand(""); 
+            haltTriggeredRef.current = false;
 
-            if (event.results[event.results.length - 1].isFinal) {
-                haltTriggeredRef.current = false; 
-                if (finalTranscript.trim() === '') { setCommand(""); return; }
+            clearTimeout(silenceTimerRef.current);
+            
+            if (liveText.length > 0) {
+                silenceTimerRef.current = setTimeout(() => {
+                    const finalPayload = liveText.trim();
+                    setCommand(""); 
+                    
+                    if (finalPayload === '') return;
 
-                setCommand(""); 
-                setIsProcessing(true);
-                setLogs(p => [...p, `[AUDIO_LINK] ${finalTranscript.trim()}`]);
-                
-                if (socketRef.current?.readyState === WebSocket.OPEN) {
-                  socketRef.current.send(JSON.stringify({ 
-                      intent: "command", text: finalTranscript.trim(), hciActive: true, internetActive: internetActiveRef.current 
-                  }));
-                } else {
-                  setLogs(p => [...p, "[CRITICAL] CANNOT SEND: WEBSOCKET IS OFFLINE."]);
-                }
+                    // --- THE VERBAL GATEKEEPER ---
+                    const cleanedText = finalPayload.replace(/[^a-z0-9\s]/gi, '').toLowerCase().trim();
+                    const fillerWords = ["um", "uh", "hmm", "hm", "ah", "huh", "a", "i", "oh"];
+                    
+                    if (cleanedText.length <= 1 || fillerWords.includes(cleanedText)) {
+                        console.log(`[MIC] Ignored non-verbal noise: "${finalPayload}"`);
+                        setLogs(p => [...p, `[SYS] FILTERED NOISE: "${finalPayload}"`]);
+                        
+                        try { recognitionRef.current.stop(); } catch(e){}
+                        return;
+                    }
+                    // -----------------------------
+
+                    console.log("[MIC] Valid human speech detected. Sending to AI...");
+
+                    setIsProcessing(true);
+                    isProcessingRef.current = true; 
+                    setLogs(p => [...p, `[AUDIO_LINK] ${finalPayload}`]);
+
+                    try { recognitionRef.current.stop(); } catch(e){}
+
+                    if (socketRef.current?.readyState === WebSocket.OPEN) {
+                      socketRef.current.send(JSON.stringify({ 
+                          intent: "command", text: finalPayload, hciActive: true, internetActive: internetActiveRef.current 
+                      }));
+                    } else {
+                      setLogs(p => [...p, "[CRITICAL] CANNOT SEND: WEBSOCKET IS OFFLINE."]);
+                      isProcessingRef.current = false; 
+                    }
+                }, 2000); 
             }
         };
 
         recognitionRef.current.onend = () => {
-            console.warn("[MIC] Engine stopped.");
-            // Walkie-Talkie Mode: Only turn mic back on if AI isn't currently speaking
-            if (hciActiveRef.current && !isSpeakingRef.current) {
-                console.log("[MIC] Re-engaging...");
+            console.warn("[MIC] Session ended / Silence triggered.");
+            if (hciActiveRef.current && !isSpeakingRef.current && !isProcessingRef.current) {
+                console.log("[MIC] Re-engaging for next command...");
                 setTimeout(() => { try { recognitionRef.current.start(); } catch(e) {} }, 250);
             }
         };
@@ -395,7 +445,9 @@ const App = () => {
         recognitionRef.current.onerror = (e) => {
             console.error(">>> [MIC CRITICAL ERROR] <<< :", e.error);
             if (e.error === 'no-speech' || e.error === 'network' || e.error === 'audio-capture') {
-                if (hciActiveRef.current && !isSpeakingRef.current) setTimeout(() => { try { recognitionRef.current.start(); } catch(err){} }, 1000);
+                if (hciActiveRef.current && !isSpeakingRef.current && !isProcessingRef.current) {
+                    setTimeout(() => { try { recognitionRef.current.start(); } catch(err){} }, 1000);
+                }
             }
         };
     }
@@ -425,6 +477,7 @@ const App = () => {
             const d = JSON.parse(e.data);
             if (d.text) {
                 setIsProcessing(false); 
+                isProcessingRef.current = false; 
                 setLogs(p => [...p, `[${d.tier || 'AI'}] ${d.text}`]); 
                 speak(d.text);
                 if (d.status === "TRANSPOSED") { setIsSurging(true); setTimeout(() => setIsSurging(false), 3000); }
@@ -497,7 +550,7 @@ const App = () => {
     const ctx = canvas.getContext('2d');
     let frameId;
     canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-    const pts = Array.from({ length: 60 }, () => ({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, vx: (Math.random() - 0.5) * 1, vy: (Math.random() - 0.5) * 1, s: Math.random() * 2 + 1 }));
+    const pts = Array.from({ length: 50 }, () => ({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, vx: (Math.random() - 0.5) * 1, vy: (Math.random() - 0.5) * 1, s: Math.random() * 2 + 1 }));
 
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -521,7 +574,8 @@ const App = () => {
           if (distSq < connectionThresholdSq) {
             ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(pts[j].x, pts[j].y);
             ctx.strokeStyle = isSurging ? '#ff0000' : (isProcessing ? theme : theme + '11');
-            ctx.lineWidth = isSurging ? 2 : 0.5; ctx.stroke();
+            ctx.lineWidth = isSurging ? 3 : 1.0; 
+            ctx.stroke();
           }
         }
       }
@@ -531,25 +585,44 @@ const App = () => {
     return () => cancelAnimationFrame(frameId);
   }, [theme, isProcessing, isSurging]);
 
-  // --- HALF-DUPLEX SPEAK FUNCTION ---
+  // --- TRUE HALF-DUPLEX NUKE SPEAK FUNCTION ---
   const speak = (txt, force = false, isGesture = false) => {
     if (!hciActiveRef.current && !force && !isGesture) return; 
     window.speechSynthesis.cancel(); 
 
-    // 1. Set the flag to block the mic from re-opening, then kill the current mic session
+    // 1. Lock the software flags
     isSpeakingRef.current = true;
-    if (recognitionRef.current) recognitionRef.current.abort();
+
+    // 2. THE NUKE: Physically detach the listener so it CANNOT hear the AI
+    if (recognitionRef.current) {
+        recognitionRef.current.onresult = null; 
+        try { recognitionRef.current.abort(); } catch(e) {}
+    }
+
+    // 3. Mute the visualizer hardware
+    if (micStreamRef.current) {
+        micStreamRef.current.getAudioTracks().forEach(track => track.enabled = false);
+    }
 
     const u = new SpeechSynthesisUtterance(txt);
     if (isGesture) { u.pitch = 1.6; u.rate = 1.2; } 
     else { u.pitch = hciActiveRef.current ? 0.6 : 1.0; u.rate = 1.1; }
 
-    // 2. When the AI finishes talking, drop the block flag and turn the mic back on
+    // 4. UNMUTE & REBUILD: Wait 800ms for room echoes to die, then reconstruct
     u.onend = () => {
-        isSpeakingRef.current = false;
-        if (hciActiveRef.current && recognitionRef.current) {
-            try { recognitionRef.current.start(); } catch (err) {}
-        }
+        setTimeout(() => {
+            if (micStreamRef.current) {
+                micStreamRef.current.getAudioTracks().forEach(track => track.enabled = true);
+            }
+            
+            isSpeakingRef.current = false;
+            
+            // Rebuild the listener from scratch now that the room is quiet
+            if (hciActiveRef.current && !isProcessingRef.current) {
+                setupSpeechRecognition(); 
+                try { recognitionRef.current.start(); } catch (err) {}
+            }
+        }, 800); 
     };
 
     window.speechSynthesis.speak(u);
@@ -561,7 +634,6 @@ const App = () => {
     
     if (audioCtxRef.current && audioCtxRef.current.state === 'suspended') audioCtxRef.current.resume();
 
-    // HARD PURGE HELPER
     const triggerHardPurge = () => {
         if (socketRef.current?.readyState === WebSocket.OPEN) {
             socketRef.current.send(JSON.stringify({ intent: "purge_memory" }));
@@ -597,68 +669,113 @@ const App = () => {
     if (!hciActive) { setLogs(p => [...p, "[SYS] AI CORE OFFLINE. ENTER 'requiem' OR 'zero requiem' TO ELEVATE LINK."]); setCommand(""); return; }
 
     setIsProcessing(true);
+    isProcessingRef.current = true; 
     setLogs(p => [...p, `[USER] ${command}`]);
     if (socketRef.current?.readyState === WebSocket.OPEN) {
       socketRef.current.send(JSON.stringify({ intent: "command", text: command, hciActive: true, internetActive: internetActive }));
     } else {
       setLogs(p => [...p, "[CRITICAL] CANNOT SEND: WEBSOCKET IS OFFLINE."]);
+      isProcessingRef.current = false;
     }
     setCommand("");
   };
 
   // ==========================================================================
-  // RENDER: GLOBAL CSS + OVERLAY ARCHITECTURE
+  // RENDER: RESPONSIVE CSS + OVERLAY ARCHITECTURE
   // ==========================================================================
   return (
     <>
       <style>{`
         * { box-sizing: border-box; }
-        body, html { margin: 0; padding: 0; overflow: hidden; background: #000; width: 100vw; height: 100vh; }
+        body, html { margin: 0; padding: 0; overflow: hidden; background: #000; width: 100vw; height: 100vh; font-family: monospace; }
+        
         .surge { box-shadow: inset 0 0 150px rgba(255,0,0,0.5); animation: s-pulse 0.4s infinite alternate; } 
         @keyframes s-pulse { from { opacity: 0.8; } to { opacity: 1; } }
+        
+        /* --- MOBILE FIRST (Stacking) --- */
+        .terminal-wrapper { box-sizing: border-box; width: 95vw; height: 95vh; display: flex; flex-direction: column; gap: 15px; border: 1px solid ${theme}33; padding: 10px; background: rgba(0,0,0,0.92); z-index: 1; backdrop-filter: blur(10px); }
+        .main-layout { display: flex; flex-direction: column; gap: 15px; flex: 1; overflow: hidden; position: relative; }
+        .col-visuals { display: flex; flex-direction: column; gap: 10px; flex: 1; min-height: 40vh; }
+        .col-logs { display: flex; flex-direction: column; min-height: 25vh; background: rgba(2,2,2,0.8); border: 1px solid #1a1a1a; padding: 15px; overflow-y: auto; }
+        
+        .header-container { display: flex; flex-direction: column; gap: 10px; border-bottom: 2px solid ${theme}; padding-bottom: 10px; }
+        .header-title { font-size: 1.2rem; margin: 0; }
+        .header-status { font-size: 0.8rem; justify-content: flex-start; }
+        
+        .terminal-input-container { display: flex; flex-direction: column; padding: 10px; gap: 10px; }
+        .prompt-text { font-size: 1rem; }
+        .input-box { font-size: 1rem; }
+        .prompt-placeholder { font-size: 1rem !important; }
+        .exec-btn { padding: 5px 15px; font-size: 0.9rem; }
+        .terminal-status { font-size: 0.7rem; }
+        
+        .fft-container { width: 95%; max-width: 500px; margin: 0 auto; }
+
+        /* --- DESKTOP REVERSION (Exactly like previous UI) --- */
+        @media (min-width: 900px) {
+            .terminal-wrapper { height: 90vh; padding: 20px; gap: 20px; }
+            .header-container { flex-direction: row; justify-content: space-between; align-items: center; }
+            .header-title { font-size: 2em; font-weight: bold; margin-top: 0.67em; margin-bottom: 0.67em; }
+            .header-status { font-size: 1rem; justify-content: flex-end; }
+            
+            /* Restores the strict 1.4fr / 0.6fr layout */
+            .main-layout { display: grid; grid-template-columns: 1.4fr 0.6fr; gap: 25px; flex-direction: row; }
+            .col-visuals { gap: 15px; min-height: 0; }
+            .col-logs { min-height: 0; padding: 20px; }
+            
+            /* Restores horizontal input bar */
+            .terminal-input-container { flex-direction: row; padding: 15px; gap: 15px; align-items: center; }
+            .prompt-text { font-size: 1.2rem; }
+            .input-box { font-size: 1.2rem; }
+            .prompt-placeholder { font-size: 1.2rem !important; }
+            .exec-btn { padding: 0 25px; font-size: 1rem; }
+            .terminal-status { font-size: 0.8rem; }
+            
+            .fft-container { width: 500px; }
+        }
       `}</style>
 
       {/* --- BOOT SCREEN OVERLAY --- */}
       {bootState !== 'ACTIVE' && (
-        <div style={{ position: 'fixed', top: 0, left: 0, zIndex: 9999, height: '100vh', width: '100vw', background: '#050505', color: theme, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'monospace' }}>
-          <div style={{ border: `1px solid ${theme}`, padding: '40px', maxWidth: '600px', width: '90%', background: 'rgba(0,0,0,0.8)', boxShadow: `0 0 30px ${theme}33`, position: 'relative' }}>
-            <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '2px', background: theme, animation: 'scanline 2s linear infinite' }}></div>
-            <h1 style={{ borderBottom: `2px solid ${theme}`, paddingBottom: '10px', letterSpacing: '4px', marginTop: 0 }}>SYNAPSE // TERMINAL_INIT</h1>
-            <div style={{ margin: '30px 0', lineHeight: '1.8', color: '#ccc', fontSize: '1.1rem' }}>
+        <div style={{ position: 'fixed', top: 0, left: 0, zIndex: 9999, height: '100vh', width: '100vw', background: '#050505', color: theme, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ border: `2px solid ${theme}`, padding: '30px', maxWidth: '600px', width: '90%', background: 'rgba(0,0,0,0.8)', boxShadow: `0 0 30px ${theme}33`, position: 'relative' }}>
+            <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '3px', background: theme, animation: 'scanline 2s linear infinite' }}></div>
+            <h1 style={{ borderBottom: `2px solid ${theme}`, paddingBottom: '10px', letterSpacing: '2px', marginTop: 0, fontSize: '1.5rem' }}>SYNAPSE // TERMINAL_INIT</h1>
+            <div style={{ margin: '20px 0', lineHeight: '1.8', color: '#ccc', fontSize: '1rem' }}>
               <p><span style={{ color: theme, fontWeight: 'bold' }}>SYS_ADMIN:</span> CHARAN</p>
               <p><span style={{ color: theme, fontWeight: 'bold' }}>PROTOCOL:</span> ZERO_REQUIEM</p>
-              <p><span style={{ color: theme, fontWeight: 'bold' }}>REQUIREMENT:</span> SECURE OPTICAL & VOCAL TELEMETRY</p>
+              <p><span style={{ color: theme, fontWeight: 'bold' }}>REQUIREMENT:</span> OPTICAL & VOCAL TELEMETRY</p>
             </div>
             {bootState === 'ERROR' && (
-              <div style={{ border: '1px solid #ff3300', background: 'rgba(255,51,0,0.1)', padding: '15px', color: '#ff3300', marginBottom: '25px', lineHeight: '1.4' }}>
-                <strong>[CRITICAL] HARDWARE ACCESS DENIED</strong><br/><span style={{ fontSize: '0.85rem' }}>{bootError}</span>
+              <div style={{ border: '2px solid #ff3300', background: 'rgba(255,51,0,0.1)', padding: '15px', color: '#ff3300', marginBottom: '25px', lineHeight: '1.4' }}>
+                <strong>[CRITICAL] HARDWARE DENIED</strong><br/><span style={{ fontSize: '0.85rem' }}>{bootError}</span>
               </div>
             )}
-            <button onClick={initializeSystem} disabled={bootState === 'CONNECTING'} style={{ width: '100%', padding: '15px', background: bootState === 'CONNECTING' ? '#222' : theme, color: bootState === 'CONNECTING' ? theme : '#000', border: `1px solid ${theme}`, fontSize: '1.2rem', fontWeight: 'bold', fontFamily: 'monospace', cursor: bootState === 'CONNECTING' ? 'not-allowed' : 'pointer', letterSpacing: '2px', transition: 'all 0.2s' }}>
-              {bootState === 'CONNECTING' ? '[ ALLOCATING SECURE HARDWARE... ]' : '[ GRANT SYSTEM ACCESS ]'}
+            <button onClick={initializeSystem} disabled={bootState === 'CONNECTING'} style={{ width: '100%', padding: '15px', background: bootState === 'CONNECTING' ? '#222' : theme, color: bootState === 'CONNECTING' ? theme : '#000', border: `2px solid ${theme}`, fontSize: '1.1rem', fontWeight: 'bold', fontFamily: 'monospace', cursor: bootState === 'CONNECTING' ? 'not-allowed' : 'pointer', letterSpacing: '2px', transition: 'all 0.2s' }}>
+              {bootState === 'CONNECTING' ? '[ ALLOCATING HARDWARE... ]' : '[ GRANT SYSTEM ACCESS ]'}
             </button>
           </div>
         </div>
       )}
 
       {/* --- MAIN TERMINAL --- */}
-      <div className={isSurging ? 'surge' : ''} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', width: '100vw', color: theme, fontFamily: 'monospace', position: 'relative' }}>
+      <div className={isSurging ? 'surge' : ''} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', width: '100vw', color: theme, position: 'relative' }}>
         <canvas ref={neuralCanvasRef} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 0 }} />
         
-        <div style={{ boxSizing: 'border-box', width: '95vw', height: '90vh', display: 'flex', flexDirection: 'column', gap: '20px', border: `1px solid ${theme}33`, padding: '20px', background: 'rgba(0,0,0,0.92)', zIndex: 1, backdropFilter: 'blur(10px)' }}>
+        <div className="terminal-wrapper">
           
-          <header style={{ borderBottom: `2px solid ${theme}`, display: 'flex', justifyContent: 'space-between', paddingBottom: '10px' }}>
-            <h1>SYNAPSE // {!hciActive ? 'ZERO_STANDBY' : (internetActive ? 'ZERO_REQUIEM_OMNILINK' : 'REQUIEM_ELEVATED')}</h1>
-            <div style={{ fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '10px' }}> 
+          <header className="header-container">
+            <h1 className="header-title">SYNAPSE // {!hciActive ? 'ZERO_STANDBY' : (internetActive ? 'OMNILINK' : 'REQUIEM_ELEVATED')}</h1>
+            <div className="header-status" style={{ fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '10px' }}> 
               {hciActive && <div style={{ width: '10px', height: '10px', background: theme, borderRadius: '50%', animation: 'pulseNode 1s infinite' }}></div>}
-              {!hciActive ? 'LLM_CORES: OFFLINE | VISION: ACTIVE' : (internetActive ? <span style={{color: theme}}>TINYLLAMA/QWEN: OMNI_LINK (NET_ACTIVE) | VISION: OFF</span> : <span style={{color: theme}}>TINYLLAMA/QWEN: ACTIVE (LOCAL) | VISION: OFF</span>)}
+              {!hciActive ? 'LLM: OFF | VISION: ACTIVE' : (internetActive ? <span style={{color: theme}}>NET_ACTIVE | VISION: OFF</span> : <span style={{color: theme}}>LOCAL_SECURE | VISION: OFF</span>)}
             </div>
           </header>
 
-          <main style={{ display: 'grid', gridTemplateColumns: '1.4fr 0.6fr', gap: '25px', flex: 1, overflow: 'hidden', position: 'relative' }}>
+          <main className="main-layout">
             
             {/* LEFT COLUMN: Visuals + Input */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', minHeight: 0 }}>
+            <div className="col-visuals">
               
               <div style={{ position: 'relative', border: `1px solid ${theme}`, background: '#080808', flex: 1, overflow: 'hidden' }}>
                 
@@ -682,71 +799,69 @@ const App = () => {
                 
                 {/* 2. OPTICAL STATUS HUD */}
                 {!hciActive && (
-                  <div style={{ position: 'absolute', bottom: 20, left: 20, background: 'rgba(0,0,0,0.9)', padding: '15px', borderLeft: `5px solid ${theme}`, minWidth: '220px', fontFamily: 'monospace' }}>
-                    STATUS: <span style={{color: '#fff', fontSize: '1.2rem'}}>{ui.gesture.toUpperCase()}</span>
+                  <div style={{ position: 'absolute', bottom: 10, left: 10, background: 'rgba(0,0,0,0.9)', padding: '10px', borderLeft: `4px solid ${theme}` }}>
+                    STATUS: <span style={{color: '#fff', fontSize: '1rem'}}>{ui.gesture.toUpperCase()}</span>
                   </div>
                 )}
 
                 {/* 3. REQUIEM MODE OVERLAY */}
                 {hciActive && (
-                  <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: internetActive ? '#050100' : '#050005', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', color: theme, textAlign: 'center', padding: '20px', zIndex: 2 }}>
+                  <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: internetActive ? '#050100' : '#050005', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', color: theme, textAlign: 'center', padding: '10px', zIndex: 2 }}>
                       <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: `radial-gradient(circle, ${internetActive ? 'rgba(255,51,0,0.05)' : 'rgba(255,0,255,0.05)'} 0%, rgba(0,0,0,0) 70%)`, animation: 's-pulse 2s infinite alternate' }}></div>
-                      <div style={{ position: 'relative', zIndex: 2 }}>
-                        <div style={{ fontSize: '2.5rem', letterSpacing: '4px', marginBottom: '10px', textShadow: `0 0 15px ${theme}`, fontWeight: 'bold', fontFamily: 'monospace' }}>{internetActive ? 'GLOBAL_NETWORK_LINK_ESTABLISHED' : 'NEURAL_LINK_ESTABLISHED'}</div>
-                        <div style={{ fontSize: '1.2rem', color: theme, letterSpacing: '2px', marginBottom: '20px', fontFamily: 'monospace' }}>{internetActive ? 'TINYLLAMA & QWEN CORES PROCESSING (UNRESTRICTED)' : 'TINYLLAMA & QWEN CORES PROCESSING (LOCAL SECURE)'}</div>
-                        <div style={{ border: `1px solid ${theme}55`, padding: '20px', background: `rgba(${internetActive ? '255,51,0' : '255,0,255'},0.05)`, maxWidth: '500px', margin: '0 auto', fontFamily: 'monospace' }}>
-                            <div style={{ color: '#888', fontSize: '0.9rem', lineHeight: '1.5' }}>
-                                [!] OPTICAL TRACKING SUSPENDED<br/>[!] FACIAL TELEMETRY SUSPENDED<br/>[!] ALL COMPUTE RESOURCES DIVERTED TO LANGUAGE MODELS<br/>
-                                {internetActive && <span style={{color: theme, fontWeight: 'bold'}}>[!] EXTERNAL NETWORK ROUTING ENABLED</span>}
+                      <div style={{ position: 'relative', zIndex: 2, width: '100%' }}>
+                        <div style={{ fontSize: '1.5rem', letterSpacing: '2px', marginBottom: '10px', textShadow: `0 0 10px ${theme}`, fontWeight: 'bold' }}>{internetActive ? 'GLOBAL_NETWORK_LINK' : 'NEURAL_LINK_ESTABLISHED'}</div>
+                        <div style={{ border: `1px solid ${theme}55`, padding: '15px', background: `rgba(${internetActive ? '255,51,0' : '255,0,255'},0.05)`, maxWidth: '90%', margin: '0 auto' }}>
+                            <div style={{ color: '#888', fontSize: '0.8rem', lineHeight: '1.5' }}>
+                                [!] VISION SUSPENDED<br/>[!] CORES DIVERTED TO LLM<br/>
+                                {internetActive && <span style={{color: theme, fontWeight: 'bold'}}>[!] EXTERNAL ROUTING ON</span>}
                             </div>
                         </div>
-                        <div style={{ marginTop: '40px' }}>
-                            <div style={{ fontSize: '0.8rem', color: theme, opacity: 0.7, marginBottom: '10px', fontFamily: 'monospace' }}>VOCAL_INPUT_STREAM_ACTIVE</div>
-                            <canvas ref={fftCanvasRef} width={500} height={120} style={{ borderBottom: `1px solid ${theme}55` }} />
+                        <div style={{ marginTop: '20px', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                            <div style={{ fontSize: '0.8rem', color: theme, opacity: 0.7, marginBottom: '5px' }}>VOCAL_INPUT_STREAM_ACTIVE</div>
+                            <div className="fft-container">
+                                <canvas ref={fftCanvasRef} style={{ width: '100%', height: '120px', borderBottom: `2px solid ${theme}55` }} />
+                            </div>
                         </div>
                       </div>
                   </div>
                 )}
 
                 {/* 4. PASSIVE BIOMETRICS */}
-                <div style={{ position: 'absolute', top: 20, right: 20, background: 'rgba(0,0,0,0.8)', padding: '15px', borderRight: `5px solid ${theme}`, textAlign: 'right', fontSize: '0.9rem', display: 'flex', flexDirection: 'column', gap: '5px', zIndex: 5, fontFamily: 'monospace' }}>
-                  <div style={{ marginBottom: '5px', color: '#888' }}>// PASSIVE BIOMETRICS</div>
-                  <div>FACIAL: <span style={{color: '#fff'}}>{biometrics.face}</span></div>
-                  <div>VOCAL_TONE: <span style={{color: '#fff'}}>{biometrics.tone}</span></div>
-                  <button onClick={triggerDeepEvaluation} style={{ marginTop: '10px', background: theme, color: '#000', border: 'none', padding: '8px 12px', fontSize: '0.8rem', cursor: 'pointer', fontWeight: 'bold', fontFamily: 'monospace' }}>GENERATE PSYCH-EVAL</button>
+                <div style={{ position: 'absolute', top: 10, right: 10, background: 'rgba(0,0,0,0.8)', padding: '10px', borderRight: `4px solid ${theme}`, textAlign: 'right', fontSize: '0.75rem', display: 'flex', flexDirection: 'column', gap: '5px', zIndex: 5 }}>
+                  <div style={{ marginBottom: '5px', color: '#888' }}>// BIOMETRICS</div>
+                  <div>FACE: <span style={{color: '#fff'}}>{biometrics.face}</span></div>
+                  <div>TONE: <span style={{color: '#fff'}}>{biometrics.tone}</span></div>
+                  <button onClick={triggerDeepEvaluation} style={{ marginTop: '5px', background: theme, color: '#000', border: 'none', padding: '5px 8px', fontSize: '0.7rem', cursor: 'pointer', fontWeight: 'bold', fontFamily: 'monospace' }}>PSYCH-EVAL</button>
                 </div>
 
                 {/* 5. PSYCH REPORT OVERLAY */}
                 {psychReport && (
-                    <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(5px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10, fontFamily: 'monospace' }}>
+                    <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(5px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10, padding: '10px' }}>
                         {psychReport === "COMPILING" ? (
-                          <div style={{ border: `1px solid ${theme}`, background: '#0a0a0a', padding: '40px', width: '400px', display: 'flex', flexDirection: 'column', alignItems: 'center', boxShadow: `0 0 50px ${theme}44` }}>
-                              <div style={{ width: '50px', height: '50px', borderTop: `3px solid ${theme}`, borderRight: `3px solid ${theme}`, borderRadius: '50%', animation: 'spin 1s linear infinite', marginBottom: '20px' }}></div>
-                              <h3 style={{ margin: 0, color: theme, letterSpacing: '3px', animation: 'blink 1s infinite' }}>ANALYZING...</h3>
-                              <div style={{ marginTop: '15px', color: '#888', fontSize: '0.8rem', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                                  <span>[EXTRACTING MICRO-EXPRESSIONS]</span><span>[CROSS-REFERENCING VOCAL BASELINE]</span><span>[CALCULATING COGNITIVE LOAD]</span>
-                              </div>
+                          <div style={{ border: `2px solid ${theme}`, background: '#0a0a0a', padding: '30px', width: '90%', maxWidth: '400px', display: 'flex', flexDirection: 'column', alignItems: 'center', boxShadow: `0 0 30px ${theme}44` }}>
+                              <div style={{ width: '40px', height: '40px', borderTop: `4px solid ${theme}`, borderRight: `4px solid ${theme}`, borderRadius: '50%', animation: 'spin 1s linear infinite', marginBottom: '20px' }}></div>
+                              <h3 style={{ margin: 0, color: theme, letterSpacing: '2px', animation: 'blink 1s infinite' }}>ANALYZING...</h3>
                           </div>
                         ) : (
-                          <div style={{ border: `1px solid ${theme}`, background: '#0a0a0a', padding: '30px', width: '80%', maxWidth: '700px', boxShadow: `0 0 50px ${theme}44` }}>
-                              <h2 style={{ borderBottom: `1px solid ${theme}`, paddingBottom: '10px', marginTop: 0, letterSpacing: '2px' }}>[ PSYCHOLOGICAL_PROFILE_L1 ]</h2>
-                              <div style={{ display: 'flex', gap: '30px', marginTop: '20px' }}>
-                                  <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                          <div style={{ border: `2px solid ${theme}`, background: '#0a0a0a', padding: '20px', width: '95%', maxWidth: '700px', maxHeight: '95%', overflowY: 'auto', boxShadow: `0 0 30px ${theme}44` }}>
+                              <h2 style={{ borderBottom: `2px solid ${theme}`, paddingBottom: '10px', marginTop: 0, letterSpacing: '1px', fontSize: '1.2rem' }}>[ PSYCH_PROFILE ]</h2>
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginTop: '15px' }}>
+                                  <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
                                       <BiometricFaceDrawing expression={psychReport.face} theme={theme} />
-                                      <div style={{ width: '100%', fontSize: '0.8rem' }}><div style={{ display: 'flex', justifyContent: 'space-between', color: '#fff' }}><span>STRESS_INDEX</span><span>{psychReport.stress}%</span></div><div style={{ height: '4px', background: '#222', width: '100%', marginTop: '3px' }}><div style={{ height: '100%', width: `${psychReport.stress}%`, background: psychReport.stress > 60 ? '#f00' : theme }}></div></div></div>
-                                      <div style={{ width: '100%', fontSize: '0.8rem' }}><div style={{ display: 'flex', justifyContent: 'space-between', color: '#fff' }}><span>COG_LOAD</span><span>{psychReport.load}%</span></div><div style={{ height: '4px', background: '#222', width: '100%', marginTop: '3px' }}><div style={{ height: '100%', width: `${psychReport.load}%`, background: psychReport.load > 70 ? '#ffcc00' : theme }}></div></div></div>
+                                      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                        <div style={{ width: '100%', fontSize: '0.8rem' }}><div style={{ display: 'flex', justifyContent: 'space-between', color: '#fff' }}><span>STRESS</span><span>{psychReport.stress}%</span></div><div style={{ height: '6px', background: '#222', width: '100%', marginTop: '3px' }}><div style={{ height: '100%', width: `${psychReport.stress}%`, background: psychReport.stress > 60 ? '#f00' : theme }}></div></div></div>
+                                        <div style={{ width: '100%', fontSize: '0.8rem' }}><div style={{ display: 'flex', justifyContent: 'space-between', color: '#fff' }}><span>LOAD</span><span>{psychReport.load}%</span></div><div style={{ height: '6px', background: '#222', width: '100%', marginTop: '3px' }}><div style={{ height: '100%', width: `${psychReport.load}%`, background: psychReport.load > 70 ? '#ffcc00' : theme }}></div></div></div>
+                                      </div>
                                   </div>
-                                  <div style={{ display: 'flex', flexDirection: 'column', color: '#ccc', flex: 1 }}>
+                                  <div style={{ display: 'flex', flexDirection: 'column', color: '#ccc' }}>
                                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', borderBottom: '1px solid #333', paddingBottom: '15px' }}>
-                                          <div><strong style={{color: theme, display: 'block', fontSize: '0.7rem'}}>DATA_POOL</strong> {psychReport.duration} SEC</div>
                                           <div><strong style={{color: theme, display: 'block', fontSize: '0.7rem'}}>DOMINANT_EXPRESSION</strong> {psychReport.face}</div>
                                           <div><strong style={{color: theme, display: 'block', fontSize: '0.7rem'}}>VOCAL_BASELINE</strong> {psychReport.tone}</div>
-                                          <div><strong style={{color: theme, display: 'block', fontSize: '0.7rem'}}>THREAT_LEVEL</strong> {psychReport.stress > 70 ? 'ELEVATED' : 'NOMINAL'}</div>
                                       </div>
-                                      <div style={{ marginTop: '15px', padding: '15px', background: 'rgba(255,255,255,0.03)', borderLeft: `3px solid ${theme}`, fontSize: '0.9rem', lineHeight: '1.5', fontFamily: 'sans-serif' }}>{psychReport.analysis}</div>
+                                      <div style={{ marginTop: '15px', padding: '15px', background: 'rgba(255,255,255,0.03)', borderLeft: `4px solid ${theme}`, fontSize: '0.85rem', lineHeight: '1.5', fontFamily: 'sans-serif' }}>{psychReport.analysis}</div>
                                   </div>
                               </div>
-                              <button onClick={() => setPsychReport(null)} style={{ marginTop: '25px', width: '100%', background: theme, color: '#000', border: 'none', padding: '12px', fontWeight: 'bold', cursor: 'pointer', letterSpacing: '2px', transition: 'all 0.2s', fontFamily: 'monospace' }}>DISMISS_REPORT</button>
+                              <button onClick={() => setPsychReport(null)} style={{ marginTop: '20px', width: '100%', background: theme, color: '#000', border: 'none', padding: '12px', fontWeight: 'bold', cursor: 'pointer', letterSpacing: '2px', transition: 'all 0.2s', fontFamily: 'monospace' }}>DISMISS_REPORT</button>
                           </div>
                         )}
                     </div>
@@ -757,9 +872,9 @@ const App = () => {
             </div>
 
             {/* RIGHT COLUMN: Logs */}
-            <div style={{ display: 'flex', flexDirection: 'column', minHeight: 0, background: 'rgba(2,2,2,0.8)', border: '1px solid #1a1a1a', padding: '20px', overflowY: 'auto' }}>
-              <p style={{ flexShrink: 0, color: '#444', borderBottom: '1px solid #1a1a1a', paddingBottom: '5px', letterSpacing: '1px', fontFamily: 'monospace' }}>SYSTEM_TELEMETRY_LOG</p>
-              {logs.map((l, i) => <div key={i} style={{ marginTop: '10px', fontSize: '0.85rem', lineHeight: '1.4', opacity: 0.9, fontFamily: 'monospace' }}>{l}</div>)}
+            <div className="col-logs">
+              <p style={{ flexShrink: 0, color: '#444', borderBottom: '1px solid #1a1a1a', paddingBottom: '5px', letterSpacing: '1px' }}>SYSTEM_TELEMETRY_LOG</p>
+              {logs.map((l, i) => <div key={i} style={{ marginTop: '10px', fontSize: '0.8rem', lineHeight: '1.4', opacity: 0.9 }}>{l}</div>)}
               <div ref={logsEndRef} style={{ flexShrink: 0 }} />
             </div>
 

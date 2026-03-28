@@ -9,3 +9,5 @@
 *.bin
 *.safetensors
 .env
+
+training_payload/leapgestrecog.zip

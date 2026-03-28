@@ -1,177 +1,186 @@
+import json
 import asyncio
-import joblib
-import numpy as np
 import torch
-from collections import deque
+import numpy as np
+import joblib
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
-from transformers import pipeline, logging
+from transformers import pipeline
 
-# Silence the Hugging Face generation warnings
-logging.set_verbosity_error()
+# ============================================================================
+# 1. SERVER CONFIGURATION & CORS
+# ============================================================================
+app = FastAPI(title="Synapse V2V Neural Core")
 
-app = FastAPI()
-
-# Allow React frontend to connect seamlessly
 app.add_middleware(
-    CORSMiddleware, 
-    allow_origins=["*"], 
-    allow_credentials=True, 
-    allow_methods=["*"], 
-    allow_headers=["*"]
+    CORSMiddleware,
+    allow_origins=["*"],  
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
-class SynapseCore:
-    def __init__(self):
-        print("\n" + "="*60)
-        print("[BOOT] SYNAPSE HCI: NEURAL ENGINE ONLINE")
-        print("="*60)
-        
-        # Hardware target (Will load into VRAM)
-        self.device = "cuda:0" if torch.cuda.is_available() else "cpu"
-        self.dtype = torch.bfloat16 if self.device == "cuda:0" else torch.float32
-        print(f"[SYSTEM] Hardware: {self.device.upper()} | Precision: {self.dtype}")
-        
-        # --- DSA OPTIMIZATION: O(1) Sliding Window Data Structures ---
-        self.window_size = 10
-        self.gesture_history = deque()
-        self.gesture_freq = {} 
-        self.current_stable_gesture = "SCANNING..."
+# ============================================================================
+# 2. AI MODEL INITIALIZATION (LOADED INTO VRAM ON BOOT)
+# ============================================================================
+print("[SYS] Booting AI Cores. Please wait...")
 
-        try:
-            print("[LOAD] Mounting TinyLlama [Standard-Brain]...")
-            self.tier1 = pipeline("text-generation", model="TinyLlama/TinyLlama-1.1B-Chat-v1.0", device=self.device, torch_dtype=self.dtype)
-            
-            print("[LOAD] Mounting Qwen 2.5 [Elevated-Brain]...")
-            self.tier2 = pipeline("text-generation", model="Qwen/Qwen2.5-1.5B-Instruct", device=self.device, torch_dtype=self.dtype)
-            
-            print("[LOAD] Mounting HaGRID OMEGA Classifier...")
-            self.gesture_model = joblib.load("hagrid_brain_v3_omega.pkl")
-            
-            self.labels = {
-                0: 'CALL', 1: 'DISLIKE', 2: 'FIST', 3: 'FOUR', 4: 'LIKE', 5: 'MUTE', 
-                6: 'OKAY', 7: 'ONE', 8: 'PALM', 9: 'PEACE', 10: 'PEACE INVERTED', 
-                11: 'ROCK ON', 12: 'STOP', 13: 'STOP INVERTED', 14: 'THREE', 
-                15: 'ALT THREE', 16: 'TWO UP', 17: 'TWO UP INVERTED'
-            }
-            print("[SUCCESS] All Systems Armed. Synapse Node Ready.\n")
-        except Exception as e:
-            print(f"[BOOT_ERROR] Critical System Failure: {e}")
+# --- 2A. Load the Language Model (TinyLlama) ---
+try:
+    llm_pipeline = pipeline(
+        "text-generation", 
+        model="TinyLlama/TinyLlama-1.1B-Chat-v1.0", 
+        torch_dtype=torch.bfloat16, 
+        device_map="auto" 
+    )
+    print("[SYS] TinyLlama Text Core: ONLINE")
+except Exception as e:
+    print(f"[CRITICAL] Failed to load LLM: {e}")
+    llm_pipeline = None
 
-    def process_gesture(self, landmarks):
-        try:
-            wrist = landmarks[0]
-            dx = landmarks[9]['x'] - wrist['x']
-            dy = landmarks[9]['y'] - wrist['y']
-            hand_scale = np.sqrt(dx**2 + dy**2)
-            if hand_scale == 0: hand_scale = 1.0
+# --- 2B. Load the HaGRID Gesture Model ---
+try:
+    gesture_model = joblib.load("hagrid_brain_v3_omega.pkl")
+    print("[SYS] HaGRID Vision Core (v3 Omega): ONLINE")
+except Exception as e:
+    print(f"[WARNING] Failed to load hagrid_brain_v3_omega.pkl. Fallback math will be used. ({e})")
+    gesture_model = None
 
-            feature_vector = []
-            for lm in landmarks:
-                feature_vector.extend([
-                    (lm['x'] - wrist['x']) / hand_scale, 
-                    (lm['y'] - wrist['y']) / hand_scale, 
-                    (lm['z'] - wrist['z']) / hand_scale
-                ])
-            
-            raw_idx = self.gesture_model.predict([feature_vector])[0]
+# ============================================================================
+# 3. GLOBAL MEMORY STATE (WITH ENGLISH-ONLY LOCK)
+# ============================================================================
+system_prompt = {
+    "role": "system", 
+    "content": "You are Synapse, a highly advanced, concise AI assistant. Respond directly and quickly. Do not use emojis. You must speak exclusively in English unless explicitly commanded otherwise by the user."
+}
+chat_history = [system_prompt]
 
-            # --- DSA OPTIMIZATION: O(1) Rolling Hash Map ---
-            if len(self.gesture_history) == self.window_size:
-                removed_idx = self.gesture_history.popleft()
-                self.gesture_freq[removed_idx] -= 1
+is_generating = False 
 
-            self.gesture_history.append(raw_idx)
-            self.gesture_freq[raw_idx] = self.gesture_freq.get(raw_idx, 0) + 1
+# ============================================================================
+# 4. HELPER FUNCTIONS
+# ============================================================================
+def generate_llm_response(user_text):
+    """Runs the heavy PyTorch inference without blocking the WebSocket."""
+    global chat_history, is_generating
+    
+    chat_history.append({"role": "user", "content": user_text})
+    
+    if not llm_pipeline:
+        return "Warning: Language Model is currently offline."
 
-            mapped_name = self.labels.get(raw_idx, f"UNMAPPED_{raw_idx}")
-            print(f"[TELEMETRY] Raw Model Output: {raw_idx} -> {mapped_name}    ", end="\r")
+    prompt = llm_pipeline.tokenizer.apply_chat_template(
+        chat_history, tokenize=False, add_generation_prompt=True
+    )
 
-            # Update stable state if the current threshold is met
-            if self.gesture_freq[raw_idx] >= 3:
-                proper_name = self.labels.get(raw_idx, f"UNMAPPED_{raw_idx}")
-                self.current_stable_gesture = proper_name.upper()
-            
-            return self.current_stable_gesture
-            
-        except Exception as e:
-            return "SCANNING..."
+    is_generating = True
+    
+    outputs = llm_pipeline(
+        prompt, 
+        max_new_tokens=150, 
+        do_sample=True, 
+        temperature=0.7, 
+        top_k=50, 
+        top_p=0.95
+    )
+    
+    is_generating = False
+    
+    full_output = outputs[0]["generated_text"]
+    response = full_output.split("<|assistant|>")[-1].strip()
+    
+    chat_history.append({"role": "assistant", "content": response})
+    return response
 
-    def purge_memory(self):
-        # Instantly drop all queued gestures and reset the Hash Map
-        self.gesture_history.clear()
-        self.gesture_freq.clear()
-        self.current_stable_gesture = "SCANNING..."
-        print("\n[SYS] VRAM and Sensor buffers purged due to protocol shift.")
-
-    async def process_intent(self, text, hci_active):
-        needs_qwen = hci_active or len(text.split()) > 10 or any(w in text.lower() for w in ["explain", "code", "analyze"])
-        
-        model = self.tier2 if needs_qwen else self.tier1
-        tier_label = "QWEN-CORE" if needs_qwen else "LLAMA-FAST"
-        
-        prompt = f"<|system|>\nYou are Synapse HCI. Be concise and technical.<|user|>\n{text}<|assistant|>\n"
-        
-        res = await asyncio.to_thread(
-            model, prompt, max_new_tokens=100, return_full_text=False, do_sample=True, temperature=0.7
-        )
-        
-        return {
-            "text": res[0]['generated_text'].strip(), 
-            "tier": tier_label,
-            "status": "TRANSPOSED" if needs_qwen else "NORMAL"
-        }
-
-engine = SynapseCore()
-
-# Background task to process LLM without blocking the gesture loop
-async def handle_llm_request(websocket: WebSocket, text: str, hci_active: bool):
-    try:
-        response = await engine.process_intent(text, hci_active)
-        await websocket.send_json(response)
-        print(f"\n[SYS] Response routed via {response['tier']}.")
-    except Exception as e:
-        print(f"\n[CRITICAL ERROR] LLM Task Failed: {e}")
-
+# ============================================================================
+# 5. WEBSOCKET ROUTER (THE NEURAL LINK)
+# ============================================================================
 @app.websocket("/ws/predict")
 async def websocket_endpoint(websocket: WebSocket):
-    await websocket.accept()
-    print("\n[NETWORK] HCI Terminal Linked.")
+    global chat_history, is_generating
     
+    await websocket.accept()
+    print("\n[HCI] >>> Client connected to Neural Link. <<<")
+
     try:
         while True:
-            data = await websocket.receive_json()
-            intent = data.get("intent")
-            
-            # Route 1: Gesture Processing (High-frequency, fast)
-            if intent == "check_gesture" or "landmarks" in data:
-                landmarks = data.get("landmarks")
+            data = await websocket.receive_text()
+            payload = json.loads(data)
+            intent = payload.get("intent")
+
+            # ---------------------------------------------------------
+            # A. VOICE / TEXT COMMANDS
+            # ---------------------------------------------------------
+            if intent == "command":
+                user_text = payload.get("text", "").strip()
+                internet_active = payload.get("internetActive", False)
+                tier_label = "OMNI" if internet_active else "REQUIEM"
+                
+                print(f"[{tier_label} USER] {user_text}")
+                
+                ai_response = await asyncio.to_thread(generate_llm_response, user_text)
+                
+                print(f"[{tier_label} AI] {ai_response}")
+                
+                await websocket.send_json({
+                    "text": ai_response,
+                    "tier": tier_label,
+                    "status": "NOMINAL" 
+                })
+
+            # ---------------------------------------------------------
+            # B. PASSIVE HAND GESTURE TRACKING
+            # ---------------------------------------------------------
+            elif intent == "check_gesture":
+                landmarks = payload.get("landmarks", [])
+                predicted_gesture = "SEARCHING..."
+                
                 if landmarks:
-                    gesture = engine.process_gesture(landmarks)
-                    await websocket.send_json({"gesture": gesture})
+                    if gesture_model:
+                        try:
+                            row = []
+                            for lm in landmarks:
+                                row.extend([lm['x'], lm['y'], lm['z']])
+                            
+                            X_input = np.array([row])
+                            prediction = gesture_model.predict(X_input)
+                            predicted_gesture = str(prediction[0]).upper()
+                        except Exception as e:
+                            print(f"[VISION ERROR] Scikit-Learn inference failed: {e}")
+                            predicted_gesture = "MODEL_ERROR"
+                    else:
+                        wrist_y = landmarks[0]['y']
+                        middle_finger_y = landmarks[12]['y']
+                        index_finger_y = landmarks[8]['y']
+                        
+                        if index_finger_y < wrist_y and middle_finger_y > wrist_y:
+                            predicted_gesture = "POINTING"
+                        elif middle_finger_y < wrist_y - 0.2:
+                            predicted_gesture = "OPEN PALM"
+                        else:
+                            predicted_gesture = "FIST / RESTING"
                 
-            # Route 2: LLM Command (Low-frequency, slow)
-            elif intent == "command" or "text" in data:
-                user_text = data.get("text", "")
-                hci_active = data.get("hciActive", False)
-                print(f"\n[USER_VOICE] Incoming Command: '{user_text}'")
-                
-                # Background the LLM processing so the loop continues instantly
-                asyncio.create_task(handle_llm_request(websocket, user_text, hci_active))
-                
-            # Route 3: Vocal Interruption
-            elif intent == "halt_generation":
-                print("\n[SYS] >> HALT COMMAND RECEIVED FROM FRONTEND <<")
+                await websocket.send_json({
+                    "gesture": predicted_gesture
+                })
 
-            # Route 4: Hard Memory Purge
+            # ---------------------------------------------------------
+            # C. MEMORY PURGE
+            # ---------------------------------------------------------
             elif intent == "purge_memory":
-                engine.purge_memory()
+                print("[SYS] Hard Purge triggered. Wiping context memory.")
+                chat_history = [system_prompt]
                 
-    except WebSocketDisconnect:
-        print("\n[NETWORK] HCI Terminal Disconnected.")
-    except Exception as e:
-        print(f"\n[NETWORK ERROR] {e}")
+            # ---------------------------------------------------------
+            # D. VOCAL OVERRIDE / HALT
+            # ---------------------------------------------------------
+            elif intent == "halt_generation":
+                print("[CRITICAL] Halt command received. AI silenced.")
+                is_generating = False
 
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    except WebSocketDisconnect:
+        print("[HCI] >>> Client disconnected from Neural Link. <<<")
+    except Exception as e:
+        print(f"[ERROR] Engine Failure: {str(e)}")
+
+# To start the server: uvicorn server:app --host 0.0.0.0 --port 8000
